@@ -1,0 +1,13 @@
+# Compilación
+bin/
+obj/
+publish/
+*.user
+*.suo
+.vs/
+
+# Carpeta local con la app compilada y paquetes de release
+App/
+release/
+*.zip
+*.lnk
