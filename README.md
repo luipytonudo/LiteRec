@@ -57,7 +57,7 @@ Los videos se guardan en `Videos\LiteRec`. Puedes cambiar la carpeta desde la ap
 ## 🛠️ Compilar desde el código
 
 ```bash
-git clone https://github.com/<tu-usuario>/LiteRec.git
+git clone https://github.com/luipytonudo/LiteRec.git
 cd LiteRec
 dotnet build -c Release
 ```
