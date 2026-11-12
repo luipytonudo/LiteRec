@@ -1,0 +1,86 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  linux:
+    name: Linux x64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publicar (autocontenido, no necesita .NET instalado)
+        run: |
+          dotnet publish src/LiteRec -c Release -f net10.0 -r linux-x64 --self-contained true -o out/LiteRec
+          cp packaging/linux/install.sh packaging/linux/literec.desktop out/LiteRec/
+          cp src/LiteRec/Assets/logo.png out/LiteRec/literec.png
+          cp LICENSE THIRD-PARTY-NOTICES.md out/LiteRec/
+          chmod +x out/LiteRec/LiteRec out/LiteRec/install.sh
+
+      - name: Prueba de grabación real (Xvfb + FFmpeg)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg xvfb x11-xserver-utils > /dev/null
+          xvfb-run -a -s "-screen 0 1920x1080x24" out/LiteRec/LiteRec --selftest 5 /tmp/literec-ci.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,width,height,avg_frame_rate -of default=nw=1 /tmp/literec-ci.mp4
+
+      - name: Empaquetar
+        run: tar -C out -czf LiteRec-linux-x64.tar.gz LiteRec
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LiteRec-linux-x64
+          path: LiteRec-linux-x64.tar.gz
+
+      - name: Adjuntar a la release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" LiteRec-linux-x64.tar.gz --clobber
+
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publicar
+        shell: pwsh
+        run: |
+          dotnet publish src/LiteRec -c Release -f net10.0-windows -o out/LiteRec
+          Remove-Item out/LiteRec/*.pdb, out/LiteRec/*.xml -ErrorAction SilentlyContinue
+          Copy-Item LICENSE, THIRD-PARTY-NOTICES.md out/LiteRec/
+          Compress-Archive -Path out/LiteRec/* -DestinationPath LiteRec-win-x64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LiteRec-win-x64
+          path: LiteRec-win-x64.zip
+
+      - name: Adjuntar a la release
+        if: github.event_name == 'release'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" LiteRec-win-x64.zip --clobber
