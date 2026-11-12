@@ -1,13 +1,22 @@
-using ScreenRecorderLib;
+using System.Diagnostics;
 
 namespace LiteRec.Core;
 
-/// <summary>Fuente seleccionable en la interfaz (pantalla o ventana).</summary>
-public sealed class SourceItem
+public enum RecState { Idle, Recording, Paused, Finishing }
+
+/// <summary>Fuente de captura (pantalla, ventana o selector del sistema).</summary>
+public sealed class CaptureSource
 {
     public required string Label { get; init; }
-    public required RecordingSourceBase Source { get; init; }
-    public bool IsWindow { get; init; }
+    /// <summary>Identificador que entiende el backend (nombre de monitor, "portal", etc.).</summary>
+    public required string Id { get; init; }
+    /// <summary>Área en píxeles (solo la usa FFmpeg/x11grab).</summary>
+    public int X { get; init; }
+    public int Y { get; init; }
+    public int Width { get; init; }
+    public int Height { get; init; }
+    /// <summary>Objeto nativo del backend (p. ej. RecordableDisplay en Windows).</summary>
+    public object? Native { get; init; }
     public override string ToString() => Label;
 }
 
@@ -24,140 +33,46 @@ public sealed class RecordingSettings
     public bool ShowClicks { get; init; }
 }
 
-/// <summary>
-/// Motor de grabación. Captura por GPU (Desktop Duplication / Windows.Graphics.Capture),
-/// escala en GPU y codifica con el encoder por hardware (Quick Sync / NVENC / AMF)
-/// vía Media Foundation. Los fotogramas nunca pasan por memoria administrada.
-/// </summary>
-public sealed class RecordingEngine : IDisposable
+/// <summary>Motor de grabación. Cada sistema operativo tiene su implementación.</summary>
+public interface IRecordingEngine : IDisposable
 {
-    private Recorder? _recorder;
+    /// <summary>Texto corto para la etiqueta de la barra de título (p. ej. "GPU · H.264").</summary>
+    string EncoderLabel(bool hevc);
+    /// <summary>Descripción del backend en uso (se muestra en el pie).</summary>
+    string BackendName { get; }
+    bool SupportsPause { get; }
+    bool SupportsClicks { get; }
+    bool SupportsWindows { get; }
 
-    public event Action<RecorderStatus>? StatusChanged;
-    public event Action<string>? Completed;
-    public event Action<string>? Failed;
+    RecState State { get; }
+    /// <summary>Fotogramas grabados, si el backend los informa.</summary>
+    int? FrameNumber { get; }
+    string? CurrentFile { get; }
+    /// <summary>Procesos auxiliares (FFmpeg, gpu-screen-recorder) para sumar su CPU/RAM.</summary>
+    Process? HelperProcess { get; }
 
-    public RecorderStatus Status => _recorder?.Status ?? RecorderStatus.Idle;
-    public int FrameNumber => _recorder?.CurrentFrameNumber ?? 0;
-    public string? CurrentFile { get; private set; }
+    event Action<RecState>? StateChanged;
+    event Action<string>? Completed;
+    event Action<string>? Failed;
 
-    public static List<SourceItem> GetSources()
+    IReadOnlyList<CaptureSource> GetSources();
+    void Start(CaptureSource source, RecordingSettings settings, string filePath);
+    void Stop();
+    void Pause();
+    void Resume();
+}
+
+public static class RecordingEngineFactory
+{
+    public static IRecordingEngine Create()
     {
-        var list = new List<SourceItem>();
-        int i = 1;
-        foreach (var d in Recorder.GetDisplays())
-        {
-            list.Add(new SourceItem
-            {
-                Label = $"🖥  Pantalla {i++}  ·  {d.FriendlyName}",
-                Source = d,
-            });
-        }
-        foreach (var w in Recorder.GetWindows())
-        {
-            if (!w.IsValidWindow() || w.IsMinmimized() || string.IsNullOrWhiteSpace(w.Title)) continue;
-            if (w.Title == "LiteRec") continue;
-            var title = w.Title.Length > 48 ? w.Title[..45] + "…" : w.Title;
-            list.Add(new SourceItem { Label = $"🗔  {title}", Source = w, IsWindow = true });
-        }
-        return list;
+#if WINDOWS
+        if (OperatingSystem.IsWindows()) return new Platforms.Windows.WindowsRecordingEngine();
+#endif
+        if (OperatingSystem.IsLinux()) return new Platforms.Linux.LinuxRecordingEngine();
+        throw new PlatformNotSupportedException(
+            OperatingSystem.IsWindows()
+                ? "Esta compilación es la de Linux. Descarga la versión de Windows."
+                : "LiteRec funciona en Windows y Linux.");
     }
-
-    public void Start(SourceItem item, RecordingSettings s, string filePath)
-    {
-        DisposeRecorder();
-
-        var src = item.Source;
-        if (src is DisplayRecordingSource ds)
-        {
-            ds.IsCursorCaptureEnabled = s.ShowCursor;
-            ds.RecorderApi = RecorderApi.DesktopDuplication; // el más ligero para pantalla completa
-        }
-        else if (src is WindowRecordingSource ws)
-        {
-            ws.IsCursorCaptureEnabled = s.ShowCursor;
-            ws.IsBorderRequired = false; // las ventanas siempre usan Windows.Graphics.Capture
-        }
-        src.IsVideoFramePreviewEnabled = false; // sin vista previa = cero copias extra
-
-        var audioSources = new List<AudioSourceBase>();
-        if (s.SystemAudio)
-        {
-            var dev = Recorder.GetSystemAudioLoopbackDevices().FirstOrDefault(d => d.IsDefaultDevice)
-                      ?? Recorder.GetSystemAudioLoopbackDevices().FirstOrDefault();
-            if (dev != null) audioSources.Add(dev);
-        }
-        if (s.Microphone)
-        {
-            var mic = Recorder.GetSystemAudioCaptureDevices().FirstOrDefault(d => d.IsDefaultDevice)
-                      ?? Recorder.GetSystemAudioCaptureDevices().FirstOrDefault();
-            if (mic != null) audioSources.Add(mic);
-        }
-
-        IVideoEncoder encoder = s.UseHevc
-            ? new H265VideoEncoder { BitrateMode = H265BitrateControlMode.CBR, EncoderProfile = H265Profile.Main }
-            : new H264VideoEncoder { BitrateMode = H264BitrateControlMode.CBR, EncoderProfile = H264Profile.High };
-
-        var opts = new RecorderOptions
-        {
-            SourceOptions = new SourceOptions { RecordingSources = { src } },
-            OutputOptions = new OutputOptions
-            {
-                RecorderMode = RecorderMode.Video,
-                OutputFrameSize = s.Width > 0 ? new ScreenSize(s.Width, s.Height) : null,
-                Stretch = StretchMode.Uniform,
-                IsVideoFramePreviewEnabled = false,
-            },
-            VideoEncoderOptions = new VideoEncoderOptions
-            {
-                Encoder = encoder,
-                Framerate = s.Fps,
-                Bitrate = s.BitrateKbps * 1000,
-                IsFixedFramerate = true,          // 60 fps constantes, ideal para editores
-                IsHardwareEncodingEnabled = true, // GPU
-                IsLowLatencyEnabled = false,
-                IsThrottlingDisabled = false,
-                IsMp4FastStartEnabled = false,    // evita reescribir el archivo al final
-                IsFragmentedMp4Enabled = false,
-            },
-            AudioOptions = new AudioOptions
-            {
-                IsAudioEnabled = audioSources.Count > 0,
-                Bitrate = AudioBitrate.bitrate_160kbps,
-                Channels = AudioChannels.Stereo,
-                AudioSources = audioSources,
-            },
-            MouseOptions = new MouseOptions
-            {
-                IsMousePointerEnabled = s.ShowCursor,
-                IsMouseClicksDetected = s.ShowClicks,
-                MouseClickDetectionMode = MouseDetectionMode.Hook,
-                MouseLeftClickDetectionColor = "#FFE5484D",
-                MouseRightClickDetectionColor = "#FF4C8DFF",
-                MouseClickDetectionRadius = 22,
-                MouseClickDetectionDuration = 120,
-            },
-            LogOptions = new LogOptions { IsLogEnabled = false },
-        };
-
-        _recorder = Recorder.CreateRecorder(opts);
-        _recorder.OnStatusChanged += (_, e) => StatusChanged?.Invoke(e.Status);
-        _recorder.OnRecordingComplete += (_, e) => Completed?.Invoke(e.FilePath);
-        _recorder.OnRecordingFailed += (_, e) => Failed?.Invoke(e.Error);
-
-        CurrentFile = filePath;
-        _recorder.Record(filePath);
-    }
-
-    public void Stop() => _recorder?.Stop();
-    public void Pause() => _recorder?.Pause();
-    public void Resume() => _recorder?.Resume();
-
-    public void DisposeRecorder()
-    {
-        _recorder?.Dispose();
-        _recorder = null;
-    }
-
-    public void Dispose() => DisposeRecorder();
 }
