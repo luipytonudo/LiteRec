@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=LiteRec
+GenericName=Grabador de pantalla
+Comment=Grabador de pantalla ultraligero a 60 fps
+Exec=@EXEC@
+Icon=literec
+Terminal=false
+Categories=AudioVideo;Video;Recorder;
+Keywords=screen;recorder;capture;grabar;pantalla;
+StartupWMClass=LiteRec
