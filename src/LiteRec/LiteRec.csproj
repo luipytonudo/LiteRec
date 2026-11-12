@@ -1,42 +1,58 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    Un solo proyecto, dos destinos:
+      net10.0-windows -> captura con ScreenRecorderLib (DXGI + Media Foundation)
+      net10.0         -> Linux: gpu-screen-recorder o FFmpeg (VAAPI / NVENC / x264)
+  -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFrameworks>net10.0;net10.0-windows</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
     <AssemblyName>LiteRec</AssemblyName>
+    <RootNamespace>LiteRec</RootNamespace>
     <Product>LiteRec</Product>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-
-    <!-- ScreenRecorderLib es nativo (C++/CLI): hay que compilar para x64 -->
-    <Platforms>x64</Platforms>
-    <Platform>x64</Platform>
-    <PlatformTarget>x64</PlatformTarget>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>false</SelfContained>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>Assets\LiteRec.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!-- Optimizaciones de memoria / rendimiento -->
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>true</TieredPGO>
-    <TieredCompilation>true</TieredCompilation>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <SatelliteResourceLanguages>es</SatelliteResourceLanguages>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\LiteRec.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- Windows: ScreenRecorderLib es C++/CLI y exige x64 -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <Platform>x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\LiteRec.ico" />
-    <Resource Include="Assets\logo.png" />
+    <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
     <PackageReference Include="ScreenRecorderLib" Version="7.0.1" />
+  </ItemGroup>
+
+  <!-- El backend de Windows solo se compila para Windows -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0-windows'">
+    <Compile Remove="Platforms\Windows\**" />
   </ItemGroup>
 
 </Project>

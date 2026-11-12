@@ -1,0 +1,201 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LiteRec.MainWindow"
+        Title="LiteRec" Width="800" SizeToContent="Height" CanResize="False"
+        WindowDecorations="None" WindowStartupLocation="CenterScreen"
+        Icon="avares://LiteRec/Assets/LiteRec.ico"
+        Background="{StaticResource Bg}" Foreground="{StaticResource Text}">
+
+    <Border BorderBrush="#1F222C" BorderThickness="1" Background="{StaticResource Bg}">
+        <Grid RowDefinitions="44,Auto,Auto">
+
+            <!-- ===== Barra de título (arrastrable) ===== -->
+            <Grid Grid.Row="0" Name="TitleBar" Background="Transparent" Margin="18,0,6,0" ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                    <Image Source="avares://LiteRec/Assets/logo.png" Width="22" Height="22"/>
+                    <TextBlock Text="LiteRec" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                    <Border Background="#1E2130" CornerRadius="6" Padding="7,2" VerticalAlignment="Center">
+                        <TextBlock Name="EncoderBadge" Text="GPU · H.264" FontSize="10.5" FontWeight="SemiBold" Foreground="#A99BFF"/>
+                    </Border>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Classes="title" Click="Minimize_Click" ToolTip.Tip="Minimizar">
+                        <Path Data="{StaticResource IcoMin}" Stroke="{StaticResource Muted}" Width="10" Height="10" StrokeThickness="1.3" Stretch="None"/>
+                    </Button>
+                    <Button Classes="title close" Click="Close_Click" ToolTip.Tip="Cerrar">
+                        <Path Data="{StaticResource IcoClose}" Stroke="{StaticResource Muted}" Width="10" Height="10" StrokeThickness="1.3" Stretch="None"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ===== Contenido ===== -->
+            <Grid Grid.Row="1" Margin="18,4,18,0" ColumnDefinitions="350,14,*">
+
+                <!-- Columna izquierda -->
+                <StackPanel Grid.Column="0" Spacing="14">
+                    <Border Classes="card" Background="{StaticResource HeroGrad}" Padding="20,18">
+                        <StackPanel>
+                            <Border Name="StatusPill" HorizontalAlignment="Center" CornerRadius="20" Padding="12,4" Background="#1A2D24">
+                                <StackPanel Orientation="Horizontal" Spacing="7">
+                                    <Ellipse Name="StatusDot" Width="8" Height="8" Fill="{StaticResource Ok}" VerticalAlignment="Center"/>
+                                    <TextBlock Name="StatusText" Text="LISTO" FontSize="11" FontWeight="Bold"
+                                               Foreground="{StaticResource Ok}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Name="TimerText" Text="00:00:00" FontSize="46" FontWeight="SemiBold" FontFeatures="+tnum"
+                                       HorizontalAlignment="Center" Margin="0,10,0,4"/>
+                            <TextBlock Name="SummaryText" Text="1280×720 · 60 fps · 7,5 Mbps" FontSize="12"
+                                       Foreground="{StaticResource Muted}" HorizontalAlignment="Center"/>
+
+                            <Grid ColumnDefinitions="*,*,*,*" Margin="0,16,0,18">
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                    <TextBlock Name="FpsStat" Text="—" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="FPS" FontSize="10" Foreground="{StaticResource Dim}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                    <TextBlock Name="SizeStat" Text="—" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="ARCHIVO" FontSize="10" Foreground="{StaticResource Dim}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                    <TextBlock Name="CpuStat" Text="—" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="CPU" FontSize="10" Foreground="{StaticResource Dim}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                                    <TextBlock Name="RamStat" Text="—" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="RAM" FontSize="10" Foreground="{StaticResource Dim}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Classes="round" Click="OpenFolder_Click" ToolTip.Tip="Abrir carpeta de grabaciones" VerticalAlignment="Center">
+                                    <Path Classes="icon" Data="{StaticResource IcoFolder}" Stroke="{StaticResource Text}" Width="18" Height="18"/>
+                                </Button>
+                                <Panel Width="84" Height="84" Margin="26,0">
+                                    <Ellipse Name="RecHalo" Fill="#33FF3B5C" Margin="-8"/>
+                                    <Button Name="RecordButton" Classes="record" Click="Record_Click" ToolTip.Tip="Grabar / Detener (F9)">
+                                        <Panel>
+                                            <Ellipse Name="RecIconCircle" Width="26" Height="26" Fill="White"/>
+                                            <Rectangle Name="RecIconStop" Width="24" Height="24" RadiusX="5" RadiusY="5" Fill="White" IsVisible="False"/>
+                                        </Panel>
+                                    </Button>
+                                </Panel>
+                                <Button Name="PauseButton" Classes="round" Click="Pause_Click" ToolTip.Tip="Pausar / Reanudar (F10)"
+                                        IsEnabled="False" VerticalAlignment="Center">
+                                    <Panel>
+                                        <Path Name="PauseIcon" Classes="icon" Data="{StaticResource IcoPause}" Fill="{StaticResource Text}" Width="14" Height="16"/>
+                                        <Path Name="PlayIcon" Classes="icon" Data="{StaticResource IcoPlay}" Fill="{StaticResource Text}" Width="14" Height="16" IsVisible="False"/>
+                                    </Panel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card">
+                        <StackPanel>
+                            <TextBlock Text="FUENTE DE CAPTURA" Classes="section"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <ComboBox Name="SourceCombo" HorizontalAlignment="Stretch"/>
+                                <Button Grid.Column="1" Classes="ghost" Margin="8,0,0,0" Width="38" Height="38" Padding="0"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Click="Refresh_Click" ToolTip.Tip="Actualizar lista">
+                                    <Path Classes="icon" Data="{StaticResource IcoRefresh}" Stroke="{StaticResource Text}" Width="14" Height="14"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Columna derecha -->
+                <StackPanel Grid.Column="2" Spacing="14">
+                    <Border Classes="card">
+                        <StackPanel Name="VideoPanel">
+                            <TextBlock Text="RESOLUCIÓN DE SALIDA" Classes="section"/>
+                            <Border Classes="seghost">
+                                <UniformGrid Rows="1">
+                                    <RadioButton Name="Res720" GroupName="res" Classes="seg" Content="720p" IsCheckedChanged="Option_Changed"/>
+                                    <RadioButton Name="Res900" GroupName="res" Classes="seg" Content="900p" IsCheckedChanged="Option_Changed"/>
+                                    <RadioButton Name="Res1080" GroupName="res" Classes="seg" Content="1080p" IsCheckedChanged="Option_Changed"/>
+                                    <RadioButton Name="ResNative" GroupName="res" Classes="seg" Content="Nativa" IsCheckedChanged="Option_Changed"/>
+                                </UniformGrid>
+                            </Border>
+
+                            <Grid ColumnDefinitions="*,12,*" Margin="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="FOTOGRAMAS" Classes="section"/>
+                                    <Border Classes="seghost">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Name="Fps60" GroupName="fps" Classes="seg" Content="60 fps" IsCheckedChanged="Option_Changed"/>
+                                            <RadioButton Name="Fps30" GroupName="fps" Classes="seg" Content="30 fps" IsCheckedChanged="Option_Changed"/>
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="CÓDEC" Classes="section"/>
+                                    <Border Classes="seghost">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Name="CodecH264" GroupName="codec" Classes="seg" Content="H.264" IsCheckedChanged="Option_Changed"
+                                                         ToolTip.Tip="Máxima compatibilidad (recomendado)"/>
+                                            <RadioButton Name="CodecH265" GroupName="codec" Classes="seg" Content="H.265" IsCheckedChanged="Option_Changed"
+                                                         ToolTip.Tip="Archivos más pequeños (requiere GPU compatible)"/>
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+
+                            <TextBlock Text="CALIDAD" Classes="section" Margin="0,14,0,7"/>
+                            <Border Classes="seghost">
+                                <UniformGrid Rows="1">
+                                    <RadioButton Name="QLow" GroupName="q" Classes="seg" Content="Ligera" IsCheckedChanged="Option_Changed"/>
+                                    <RadioButton Name="QMid" GroupName="q" Classes="seg" Content="Equilibrada" IsCheckedChanged="Option_Changed"/>
+                                    <RadioButton Name="QHigh" GroupName="q" Classes="seg" Content="Alta" IsCheckedChanged="Option_Changed"/>
+                                </UniformGrid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Padding="16,11">
+                        <StackPanel>
+                            <TextBlock Text="AUDIO Y OPCIONES" Classes="section" Margin="0,4,0,3"/>
+                            <Grid ColumnDefinitions="*,26,*">
+                                <StackPanel>
+                                    <DockPanel><ToggleSwitch Name="SysAudioToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Audio del sistema" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                    <DockPanel><ToggleSwitch Name="MicToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Micrófono" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                    <DockPanel><ToggleSwitch Name="CursorToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Mostrar cursor" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <DockPanel Name="ClicksRow"><ToggleSwitch Name="ClicksToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Resaltar clics" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                    <DockPanel Name="HideRow" ToolTip.Tip="La ventana de LiteRec no sale en el video"><ToggleSwitch Name="HideToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Ocultar LiteRec" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                    <DockPanel><ToggleSwitch Name="MinimizeToggle" DockPanel.Dock="Right" IsCheckedChanged="Option_Changed"/><TextBlock Text="Minimizar al grabar" VerticalAlignment="Center" FontSize="12.5"/></DockPanel>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Classes="card" Padding="16,12">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Path Classes="icon" Data="{StaticResource IcoFolder}" Stroke="{StaticResource Accent2}" Width="18" Height="18" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                                <TextBlock Text="Guardar en" FontSize="10.5" Foreground="{StaticResource Dim}"/>
+                                <TextBlock Name="FolderText" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <Button Name="ChangeFolderButton" Grid.Column="2" Classes="ghost" Content="Cambiar" Click="ChangeFolder_Click"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- ===== Pie ===== -->
+            <Grid Grid.Row="2" Margin="18,12,18,14" ColumnDefinitions="Auto,*">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Border Background="#1D2029" CornerRadius="5" Padding="6,1"><TextBlock Text="F9" FontSize="11" FontWeight="Bold"/></Border>
+                    <TextBlock Text="Grabar / Detener" FontSize="11.5" Foreground="{StaticResource Muted}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <Border Background="#1D2029" CornerRadius="5" Padding="6,1"><TextBlock Text="F10" FontSize="11" FontWeight="Bold"/></Border>
+                    <TextBlock Text="Pausar / Reanudar" FontSize="11.5" Foreground="{StaticResource Muted}" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Name="FooterText" Grid.Column="1" HorizontalAlignment="Right" FontSize="11.5" Foreground="{StaticResource Dim}"
+                           TextTrimming="CharacterEllipsis" Margin="16,0,0,0" VerticalAlignment="Center"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

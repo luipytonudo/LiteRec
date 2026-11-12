@@ -1,0 +1,217 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LiteRec.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <!-- ===== Paleta ===== -->
+        <SolidColorBrush x:Key="Bg" Color="#0D0E12"/>
+        <SolidColorBrush x:Key="Card" Color="#15171E"/>
+        <SolidColorBrush x:Key="Stroke" Color="#242733"/>
+        <SolidColorBrush x:Key="Text" Color="#ECEEF4"/>
+        <SolidColorBrush x:Key="Muted" Color="#8B90A4"/>
+        <SolidColorBrush x:Key="Dim" Color="#5A5F72"/>
+        <SolidColorBrush x:Key="Accent2" Color="#7C5CFF"/>
+        <SolidColorBrush x:Key="Ok" Color="#2FD07A"/>
+        <LinearGradientBrush x:Key="AccentGrad" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#FF4D6A" Offset="0"/>
+            <GradientStop Color="#C2257A" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="BrandGrad" StartPoint="0%,0%" EndPoint="100%,0%">
+            <GradientStop Color="#FF4D6A" Offset="0"/>
+            <GradientStop Color="#7C5CFF" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="HeroGrad" StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#1B1724" Offset="0"/>
+            <GradientStop Color="#14161D" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- ===== Iconos vectoriales (se ven igual en Windows y Linux) ===== -->
+        <StreamGeometry x:Key="IcoFolder">M3,6 C3,5.4 3.4,5 4,5 L9.5,5 L11.5,7.5 L20,7.5 C20.6,7.5 21,7.9 21,8.5 L21,18 C21,18.6 20.6,19 20,19 L4,19 C3.4,19 3,18.6 3,18 Z</StreamGeometry>
+        <StreamGeometry x:Key="IcoRefresh">M19,12 A7,7 0 1 1 16.95,7.05 M17,3.5 L17,7.5 L13,7.5</StreamGeometry>
+        <StreamGeometry x:Key="IcoPause">M7,5 L10.5,5 L10.5,19 L7,19 Z M13.5,5 L17,5 L17,19 L13.5,19 Z</StreamGeometry>
+        <StreamGeometry x:Key="IcoPlay">M8,5 L19,12 L8,19 Z</StreamGeometry>
+        <StreamGeometry x:Key="IcoMin">M0,5 L10,5</StreamGeometry>
+        <StreamGeometry x:Key="IcoClose">M0,0 L10,10 M10,0 L0,10</StreamGeometry>
+
+        <!-- Colores del ComboBox / ToggleSwitch de Fluent -->
+        <SolidColorBrush x:Key="ComboBoxBackground" Color="#0F1116"/>
+        <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#13151B"/>
+        <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#242733"/>
+        <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#3A3E50"/>
+        <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#181A22"/>
+        <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#2E3240"/>
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#262A36"/>
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#302C4A"/>
+        <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#3A3560"/>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme/>
+
+        <Style Selector="TextBlock.section">
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,7"/>
+        </Style>
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+        <Style Selector="Border.seghost">
+            <Setter Property="Background" Value="#0F1116"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="2"/>
+        </Style>
+        <Style Selector="Path.icon">
+            <Setter Property="Stretch" Value="Uniform"/>
+            <Setter Property="StrokeThickness" Value="1.8"/>
+            <Setter Property="StrokeLineCap" Value="Round"/>
+            <Setter Property="StrokeJoin" Value="Round"/>
+        </Style>
+
+        <!-- ===== Botones de la barra de título ===== -->
+        <Style Selector="Button.title">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button.title:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#22FFFFFF"/>
+        </Style>
+        <Style Selector="Button.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#E5484D"/>
+        </Style>
+
+        <!-- ===== Botón secundario ===== -->
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="#1D2029"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#262A36"/>
+            <Setter Property="BorderBrush" Value="#343849"/>
+        </Style>
+
+        <!-- ===== Botón circular ===== -->
+        <Style Selector="Button.round">
+            <Setter Property="Width" Value="52"/>
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="26"/>
+            <Setter Property="Background" Value="#1D2029"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Stroke}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.round:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2A2E3B"/>
+        </Style>
+        <Style Selector="Button.round:disabled">
+            <Setter Property="Opacity" Value="0.35"/>
+        </Style>
+        <Style Selector="Button.round:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1D2029"/>
+        </Style>
+
+        <!-- ===== Botón de grabar ===== -->
+        <Style Selector="Button.record">
+            <Setter Property="Width" Value="84"/>
+            <Setter Property="Height" Value="84"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="CornerRadius" Value="42"/>
+            <Setter Property="Background" Value="{StaticResource AccentGrad}"/>
+            <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.record:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentGrad}"/>
+            <Setter Property="BorderBrush" Value="#80FFFFFF"/>
+        </Style>
+        <Style Selector="Button.record:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentGrad}"/>
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
+        <Style Selector="Button.record:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource AccentGrad}"/>
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <!-- ===== Selector segmentado ===== -->
+        <Style Selector="RadioButton.seg">
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="b" Background="Transparent" CornerRadius="7" Padding="0,7" Margin="2">
+                        <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="RadioButton.seg:pointerover">
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+        </Style>
+        <Style Selector="RadioButton.seg:checked">
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+        </Style>
+        <Style Selector="RadioButton.seg:checked /template/ Border#b">
+            <Setter Property="Background" Value="#2B2F3D"/>
+        </Style>
+        <Style Selector="RadioButton.seg:disabled">
+            <Setter Property="Opacity" Value="0.45"/>
+        </Style>
+
+        <!-- ===== Interruptor ===== -->
+        <Style Selector="ToggleSwitch">
+            <Setter Property="OnContent" Value=""/>
+            <Setter Property="OffContent" Value=""/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="ToggleSwitch:checked /template/ Border#SwitchKnobBounds">
+            <Setter Property="Background" Value="{StaticResource BrandGrad}"/>
+        </Style>
+        <Style Selector="ToggleSwitch:checked:pointerover /template/ Border#SwitchKnobBounds">
+            <Setter Property="Background" Value="{StaticResource BrandGrad}"/>
+        </Style>
+        <Style Selector="ToggleSwitch /template/ Border#OuterBorder">
+            <Setter Property="Background" Value="#2A2D39"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Height" Value="38"/>
+        </Style>
+    </Application.Styles>
+</Application>
