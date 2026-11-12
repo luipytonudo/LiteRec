@@ -11,3 +11,4 @@ App/
 release/
 *.zip
 *.lnk
+out/

@@ -1,8 +1,18 @@
 # Third-party notices
 
-LiteRec uses the following open-source component:
+LiteRec uses the following open-source components:
 
-## ScreenRecorderLib
+## Avalonia UI (all platforms)
+- https://github.com/AvaloniaUI/Avalonia
+- License: MIT — Copyright (c) AvaloniaUI OÜ and contributors
+- Includes SkiaSharp and HarfBuzzSharp (MIT) and the Inter font (SIL Open Font License 1.1).
+
+## External programs used on Linux (not bundled)
+LiteRec runs these as separate processes if they are installed on the user's system:
+- gpu-screen-recorder — https://git.dec05eba.com/gpu-screen-recorder/about/ — GPL-3.0
+- FFmpeg — https://ffmpeg.org — LGPL-2.1+ / GPL-2.0+ depending on the build
+
+## ScreenRecorderLib (Windows build)
 - https://github.com/sskodje/ScreenRecorderLib
 - License: MIT — Copyright (c) 2017 Sverre Skodje
 
